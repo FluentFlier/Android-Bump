@@ -13,10 +13,5 @@ local.properties
 *.keystore
 !debug.keystore
 
-# Backend
-backend/node_modules/
-backend/.wrangler/
-
 # Context
 .context/
-backend/node_modules/

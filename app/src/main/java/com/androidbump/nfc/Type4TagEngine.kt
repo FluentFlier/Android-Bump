@@ -22,8 +22,9 @@ class Type4TagEngine(shareUrl: String) {
 
     private enum class SelectedFile { NONE, APP, CC, NDEF }
 
-    private val ccFile = NdefUriEncoder.buildCapabilityContainer()
-    private val ndefFile = NdefUriEncoder.buildNdefFile(shareUrl)
+    private val ndefFileSize = NdefUriEncoder.ndefFileSizeForUrl(shareUrl)
+    private val ccFile = NdefUriEncoder.buildCapabilityContainer(ndefMaxSize = ndefFileSize)
+    private val ndefFile = NdefUriEncoder.buildNdefFile(shareUrl, maxFileSize = ndefFileSize)
     private var selectedFile = SelectedFile.NONE
     private var readCompleted = false
 

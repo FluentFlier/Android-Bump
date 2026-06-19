@@ -1,5 +1,3 @@
-package com.androidbump.nfc
-
 /**
  * Builds NDEF URI records and Type 4 tag file layout for HCE.
  * iPhones background-read HTTPS URLs only — never raw vCard NDEF.
@@ -7,6 +5,8 @@ package com.androidbump.nfc
 object NdefUriEncoder {
 
     private const val URI_PREFIX_HTTPS: Byte = 0x04
+    private const val MIN_NDEF_FILE_SIZE = 0x00FF
+    private const val MAX_NDEF_FILE_SIZE = 0x0800
 
     fun encodeUriRecord(url: String): ByteArray {
         require(url.startsWith("https://")) { "Share URL must use HTTPS for iPhone background NFC" }
@@ -21,10 +21,15 @@ object NdefUriEncoder {
         return record
     }
 
-    fun buildNdefFile(url: String, maxFileSize: Int = 0x00FF): ByteArray {
+    fun ndefFileSizeForUrl(url: String): Int {
+        val required = encodeUriRecord(url).size + 2
+        return required.coerceIn(MIN_NDEF_FILE_SIZE, MAX_NDEF_FILE_SIZE)
+    }
+
+    fun buildNdefFile(url: String, maxFileSize: Int = ndefFileSizeForUrl(url)): ByteArray {
         val message = encodeUriRecord(url)
         require(message.size + 2 <= maxFileSize) {
-            "URL too long for NDEF file ($maxFileSize bytes max). Use a shorter backend domain."
+            "URL too long for NDEF file ($maxFileSize bytes max)."
         }
         return ByteArray(2 + message.size).apply {
             this[0] = ((message.size shr 8) and 0xFF).toByte()
@@ -33,7 +38,11 @@ object NdefUriEncoder {
         }
     }
 
-    fun buildCapabilityContainer(maxRead: Int = 0x003B, maxWrite: Int = 0x0034, ndefMaxSize: Int = 0x00FF): ByteArray {
+    fun buildCapabilityContainer(
+        maxRead: Int = 0x003B,
+        maxWrite: Int = 0x0034,
+        ndefMaxSize: Int = MIN_NDEF_FILE_SIZE,
+    ): ByteArray {
         return byteArrayOf(
             0x00, 0x0F, // CCLEN
             0x20, // Mapping version 2.0

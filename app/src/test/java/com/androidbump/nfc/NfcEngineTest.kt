@@ -22,6 +22,13 @@ class NdefUriEncoderTest {
         val ndefLength = ((file[0].toInt() and 0xFF) shl 8) or (file[1].toInt() and 0xFF)
         assertEquals(file.size - 2, ndefLength)
     }
+
+    @Test
+    fun ndefFileSizeForUrl_growsWithLongerUrls() {
+        val short = NdefUriEncoder.ndefFileSizeForUrl("https://example.com/#abc")
+        val long = NdefUriEncoder.ndefFileSizeForUrl("https://example.com/#" + "a".repeat(400))
+        assertTrue(long >= short)
+    }
 }
 
 class Type4TagEngineTest {

@@ -22,11 +22,11 @@
 ## Architecture (unchanged, tightened)
 
 ```
-Android App                    Cloudflare Worker              iPhone
-───────────                    ─────────────────              ──────
-One-time: name + phone    →    POST /api/v1/profiles
-Bump screen (wake lock)   →    HCE broadcasts https://…/c/{id}
-                               GET /c/{id} → .vcf headers   →  Tap banner → Save
+Android App (on-device)        Static landing page            iPhone
+───────────                    ───────────────────            ──────
+Build vCard locally       →    GitHub Pages (one-time deploy)
+Encode in HTTPS URL       →    URL#base64 → .vcf download  →  Tap banner → Save
+HCE broadcasts URL
 ```
 
 ---

@@ -15,7 +15,11 @@ android {
         versionCode = 1
         versionName = "1.0.0"
 
-        buildConfigField("String", "DEFAULT_BASE_URL", "\"https://android-bump.YOUR_SUBDOMAIN.workers.dev\"")
+        buildConfigField(
+            "String",
+            "SHARE_BASE_URL",
+            "\"https://fluentflier.github.io/Android-Bump\"",
+        )
     }
 
     buildTypes {
@@ -54,11 +58,8 @@ dependencies {
     implementation("androidx.compose.ui:ui")
     implementation("androidx.compose.ui:ui-tooling-preview")
     implementation("androidx.compose.material3:material3")
-    implementation("androidx.compose.material:material-icons-extended")
 
-    implementation("com.squareup.okhttp3:okhttp:4.12.0")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.9.0")
-    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.7.3")
 
     debugImplementation("androidx.compose.ui:ui-tooling")
 

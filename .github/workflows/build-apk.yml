@@ -24,17 +24,6 @@ jobs:
       - name: Configure SDK
         run: echo "sdk.dir=$ANDROID_SDK_ROOT" >> local.properties
 
-      - name: Inject backend URL from secret
-        env:
-          BACKEND_URL: ${{ secrets.BACKEND_URL }}
-        run: |
-          if [ -n "$BACKEND_URL" ]; then
-            sed -i "s|https://android-bump.YOUR_SUBDOMAIN.workers.dev|${BACKEND_URL}|g" app/build.gradle.kts
-            echo "Injected BACKEND_URL into build config"
-          else
-            echo "No BACKEND_URL secret — using placeholder in build.gradle.kts"
-          fi
-
       - name: Build debug APK
         run: ./gradlew :app:assembleDebug --no-daemon
 
@@ -45,13 +34,14 @@ jobs:
           path: app/build/outputs/apk/debug/app-debug.apk
           retention-days: 30
 
-      - name: Upload to Release (manual runs only)
-        if: github.event_name == 'workflow_dispatch'
-        uses: softprops/action-gh-release@v2
-        with:
-          tag_name: apk-${{ github.run_number }}
-          name: Android Bump APK #${{ github.run_number }}
-          files: app/build/outputs/apk/debug/app-debug.apk
-          generate_release_notes: true
+      - name: Publish latest APK release
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release view latest-apk --repo "${{ github.repository }}" 2>/dev/null \
+            && gh release delete latest-apk --repo "${{ github.repository }}" -y --cleanup-tag
+          gh release create latest-apk \
+            --repo "${{ github.repository }}" \
+            --title "Android Bump APK (latest)" \
+            --notes "Auto-built from ${GITHUB_SHA}. Install on Android, then set up at https://fluentflier.github.io/Android-Bump/" \
+            app/build/outputs/apk/debug/app-debug.apk

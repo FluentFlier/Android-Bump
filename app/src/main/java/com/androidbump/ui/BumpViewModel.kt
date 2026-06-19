@@ -9,8 +9,8 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.androidbump.data.ContactImporter
 import com.androidbump.data.ContactProfile
-import com.androidbump.data.ProfileApi
 import com.androidbump.data.ProfileRepository
+import com.androidbump.data.ShareUrlBuilder
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -35,14 +35,10 @@ enum class NfcStatus { Unknown, Ready, Disabled, Unsupported, NoHce }
 
 class BumpViewModel(
     application: Application,
-    private val api: ProfileApi = ProfileApi(),
 ) : AndroidViewModel(application) {
 
     private val _state = MutableStateFlow(BumpUiState())
     val state: StateFlow<BumpUiState> = _state.asStateFlow()
-
-    private val baseUrl: String
-        get() = com.androidbump.BuildConfig.DEFAULT_BASE_URL
 
     init {
         viewModelScope.launch {
@@ -71,13 +67,37 @@ class BumpViewModel(
             return
         }
         _state.update {
-            it.copy(
-                fullName = profile.fullName,
-                phone = profile.phone,
-                error = null,
-            )
+            it.copy(fullName = profile.fullName, phone = profile.phone, error = null)
         }
         saveAndStartBumping()
+    }
+
+    fun importFromShareUrl(url: String) {
+        viewModelScope.launch {
+            _state.update { it.copy(isSaving = true, error = null) }
+            try {
+                val profile = ShareUrlBuilder.parseProfile(url)
+                val shareUrl = ShareUrlBuilder.build(profile)
+                ProfileRepository.savePublishedProfile(getApplication(), profile, shareUrl)
+                _state.update {
+                    it.copy(
+                        fullName = profile.fullName,
+                        phone = profile.phone,
+                        isSaving = false,
+                        shareUrl = shareUrl,
+                        screen = Screen.Bump,
+                        nfcStatus = detectNfcStatus(),
+                    )
+                }
+            } catch (e: Exception) {
+                _state.update {
+                    it.copy(
+                        isSaving = false,
+                        error = e.message ?: "Could not load setup link.",
+                    )
+                }
+            }
+        }
     }
 
     fun enterSetup() {
@@ -98,12 +118,6 @@ class BumpViewModel(
             _state.update { it.copy(error = "Name and phone are required.", showManualEntry = true) }
             return
         }
-        if (baseUrl.contains("YOUR_SUBDOMAIN")) {
-            _state.update {
-                it.copy(error = "App not linked to server yet. See QUICKSTART.md in the repo.")
-            }
-            return
-        }
 
         viewModelScope.launch {
             _state.update { it.copy(isSaving = true, error = null) }
@@ -111,20 +125,13 @@ class BumpViewModel(
                 val profile = ContactProfile(
                     fullName = current.fullName.trim(),
                     phone = current.phone.trim(),
-                    email = "",
                 )
-                val context = getApplication<Application>()
-                val credentials = ProfileRepository.loadCredentials(context)
-                val response = if (credentials != null) {
-                    api.updateProfile(baseUrl, credentials.first, credentials.second, profile)
-                } else {
-                    api.createProfile(baseUrl, profile)
-                }
-                ProfileRepository.saveProfile(context, profile, response, baseUrl)
+                val shareUrl = ShareUrlBuilder.build(profile)
+                ProfileRepository.savePublishedProfile(getApplication(), profile, shareUrl)
                 _state.update {
                     it.copy(
                         isSaving = false,
-                        shareUrl = response.shareUrl,
+                        shareUrl = shareUrl,
                         screen = Screen.Bump,
                         nfcStatus = detectNfcStatus(),
                     )
@@ -133,7 +140,7 @@ class BumpViewModel(
                 _state.update {
                     it.copy(
                         isSaving = false,
-                        error = "Could not connect. Check internet and try again.",
+                        error = e.message ?: "Could not prepare your bump link.",
                         showManualEntry = true,
                     )
                 }

@@ -44,6 +44,7 @@ class MainActivity : ComponentActivity() {
     }
 
     private var viewModel: BumpViewModel? = null
+    private var pendingSetupUrl: String? = null
 
     private val nfcListener: () -> Unit = {
         runOnUiThread {
@@ -64,6 +65,13 @@ class MainActivity : ComponentActivity() {
                     val vm: BumpViewModel = viewModel(factory = BumpViewModelFactory(application))
                     viewModel = vm
                     val state by vm.state.collectAsState()
+
+                    androidx.compose.runtime.LaunchedEffect(pendingSetupUrl) {
+                        pendingSetupUrl?.let { url ->
+                            vm.importFromShareUrl(url)
+                            pendingSetupUrl = null
+                        }
+                    }
 
                     DisposableEffect(state.screen) {
                         if (state.screen == Screen.Bump) {
@@ -87,6 +95,26 @@ class MainActivity : ComponentActivity() {
                     )
                 }
             }
+        }
+
+        handleSetupLink(intent)
+    }
+
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        setIntent(intent)
+        handleSetupLink(intent)
+    }
+
+    private fun handleSetupLink(intent: Intent?) {
+        val uri = intent?.data ?: return
+        val url = uri.toString()
+        if (!url.contains("#")) return
+        val vm = viewModel
+        if (vm != null) {
+            vm.importFromShareUrl(url)
+        } else {
+            pendingSetupUrl = url
         }
     }
 

@@ -57,6 +57,8 @@ Or download from [Releases](https://github.com/FluentFlier/Android-Bump/releases
 
 **iPhone needs:** iOS 14+, NFC on, no app install.
 
+**Full test checklist:** [TESTING.md](TESTING.md)
+
 ---
 
 ## Troubleshooting

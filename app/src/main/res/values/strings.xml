@@ -1,19 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">Android Bump</string>
     <string name="apdu_service_description">Share contact via NFC bump</string>
-    <string name="setup_title">Android Bump</string>
-    <string name="setup_subtitle">Pick your contact once. Then bump any iPhone — they install nothing.</string>
+    <string name="setup_title">Bump to iPhone</string>
+    <string name="setup_subtitle">One-time setup. After that, just hold your phone near any iPhone.</string>
     <string name="import_contact">Use my contact</string>
-    <string name="enter_manually">Enter name and phone instead</string>
-    <string name="setting_up">Setting up…</string>
+    <string name="enter_manually">Type name and phone instead</string>
+    <string name="setting_up">Getting ready…</string>
     <string name="field_name">Full name</string>
     <string name="field_phone">Phone number</string>
-    <string name="continue_to_bump">Go</string>
-    <string name="bump_ready">Ready to bump</string>
-    <string name="bump_instruction">Hold the top of your phone\nnear the top of their iPhone</string>
-    <string name="bump_detected">Sent — they should tap the banner on their iPhone</string>
-    <string name="edit_card">Edit card</string>
-    <string name="nfc_ready">NFC on — keep this screen open</string>
-    <string name="nfc_missing">This phone cannot share via NFC bump.</string>
-    <string name="nfc_disabled">Turn on NFC in Settings.</string>
+    <string name="continue_to_bump">Start bumping</string>
+    <string name="step_setup">Pick your contact (one tap)</string>
+    <string name="step_bump">Open this screen when you want to share</string>
+    <string name="step_iphone">They tap the NFC banner — no app needed</string>
+    <string name="bump_ready">READY TO BUMP</string>
+    <string name="bump_step_hold">Hold tops together — like NameDrop</string>
+    <string name="bump_step_tap">They tap the NFC banner on their iPhone</string>
+    <string name="bump_sent_title">Contact sent!</string>
+    <string name="bump_sent_body">Ask them to tap the banner on their iPhone to save you.</string>
+    <string name="edit_card">Change contact</string>
+    <string name="nfc_ready">NFC ready — keep this screen open</string>
+    <string name="nfc_missing">This phone cannot share via NFC.</string>
+    <string name="nfc_disabled">NFC is off — tap to open Settings</string>
 </resources>

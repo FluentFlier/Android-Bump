@@ -27,6 +27,7 @@ data class BumpUiState(
     val error: String? = null,
     val nfcStatus: NfcStatus = NfcStatus.Unknown,
     val bumpPulse: Boolean = false,
+    val bumpJustSent: Boolean = false,
 )
 
 enum class Screen { Setup, Bump }
@@ -104,11 +105,17 @@ class BumpViewModel(
         _state.update { it.copy(screen = Screen.Setup, showManualEntry = false, error = null) }
     }
 
+    fun refreshNfcStatus() {
+        _state.update { it.copy(nfcStatus = detectNfcStatus()) }
+    }
+
     fun onBumpDetected() {
-        _state.update { it.copy(bumpPulse = true) }
+        _state.update { it.copy(bumpPulse = true, bumpJustSent = true) }
         viewModelScope.launch {
-            kotlinx.coroutines.delay(600)
+            kotlinx.coroutines.delay(500)
             _state.update { it.copy(bumpPulse = false) }
+            kotlinx.coroutines.delay(3500)
+            _state.update { it.copy(bumpJustSent = false) }
         }
     }
 

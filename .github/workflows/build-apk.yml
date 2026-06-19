@@ -22,11 +22,15 @@ jobs:
         run: echo "sdk.dir=$ANDROID_SDK_ROOT" >> local.properties
 
       - name: Inject backend URL from secret
-        if: ${{ secrets.BACKEND_URL != '' }}
         env:
           BACKEND_URL: ${{ secrets.BACKEND_URL }}
         run: |
-          sed -i "s|https://android-bump.YOUR_SUBDOMAIN.workers.dev|${BACKEND_URL}|g" app/build.gradle.kts
+          if [ -n "$BACKEND_URL" ]; then
+            sed -i "s|https://android-bump.YOUR_SUBDOMAIN.workers.dev|${BACKEND_URL}|g" app/build.gradle.kts
+            echo "Injected BACKEND_URL into build config"
+          else
+            echo "No BACKEND_URL secret — using placeholder in build.gradle.kts"
+          fi
 
       - name: Build debug APK
         run: ./gradlew :app:assembleDebug --no-daemon

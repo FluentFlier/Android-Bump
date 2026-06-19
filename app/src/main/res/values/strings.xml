@@ -22,4 +22,8 @@
     <string name="nfc_ready">NFC ready — keep this screen open</string>
     <string name="nfc_missing">This phone cannot share via NFC.</string>
     <string name="nfc_disabled">NFC is off — tap to open Settings</string>
+    <string name="nfc_not_default_title">Set Android Bump as default</string>
+    <string name="nfc_not_default_body">Your phone is asking Embedded tag vs Android Bump. Set us as default so iPhone gets your contact.</string>
+    <string name="nfc_set_default">Tap to set as default NFC app</string>
+    <string name="nfc_embedded_tag_hint">If asked, pick Android Bump — not Embedded tag.</string>
 </resources>

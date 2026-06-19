@@ -71,6 +71,7 @@ fun MainScreen(
     onSave: () -> Unit,
     onEdit: () -> Unit,
     onOpenNfcSettings: () -> Unit,
+    onSetDefaultNfc: () -> Unit,
 ) {
     AnimatedContent(
         targetState = state.screen,
@@ -81,7 +82,7 @@ fun MainScreen(
             Screen.Setup -> SetupScreen(
                 state, onNameChange, onPhoneChange, onImportContact, onShowManual, onSave,
             )
-            Screen.Bump -> BumpScreen(state, onEdit, onOpenNfcSettings)
+            Screen.Bump -> BumpScreen(state, onEdit, onOpenNfcSettings, onSetDefaultNfc)
         }
     }
 }
@@ -261,6 +262,7 @@ private fun BumpScreen(
     state: BumpUiState,
     onEdit: () -> Unit,
     onOpenNfcSettings: () -> Unit,
+    onSetDefaultNfc: () -> Unit,
 ) {
     val infiniteTransition = rememberInfiniteTransition(label = "pulse")
     val pulse by infiniteTransition.animateFloat(
@@ -290,7 +292,16 @@ private fun BumpScreen(
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
             NfcStatusChip(state.nfcStatus, onOpenNfcSettings)
-            Spacer(modifier = Modifier.weight(0.15f))
+
+            if (!state.nfcIsDefault) {
+                Spacer(modifier = Modifier.height(12.dp))
+                DefaultNfcWarning(onSetDefaultNfc)
+            } else {
+                Spacer(modifier = Modifier.height(12.dp))
+                EmbeddedTagHint()
+            }
+
+            Spacer(modifier = Modifier.weight(0.12f))
 
             Text(
                 stringResource(R.string.bump_ready),
@@ -364,6 +375,57 @@ private fun BumpScreen(
                 SuccessBanner()
             }
         }
+    }
+}
+
+@Composable
+private fun DefaultNfcWarning(onSetDefault: () -> Unit) {
+    Surface(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(14.dp),
+        color = Color(0xFFFF5252).copy(alpha = 0.22f),
+        onClick = onSetDefault,
+    ) {
+        Column(modifier = Modifier.padding(14.dp)) {
+            Text(
+                stringResource(R.string.nfc_not_default_title),
+                color = Color.White,
+                fontWeight = FontWeight.Bold,
+                fontSize = 14.sp,
+            )
+            Spacer(modifier = Modifier.height(4.dp))
+            Text(
+                stringResource(R.string.nfc_not_default_body),
+                color = Color.White.copy(alpha = 0.88f),
+                fontSize = 13.sp,
+                lineHeight = 18.sp,
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+            Text(
+                stringResource(R.string.nfc_set_default),
+                color = BumpGreenLight,
+                fontWeight = FontWeight.SemiBold,
+                fontSize = 13.sp,
+            )
+        }
+    }
+}
+
+@Composable
+private fun EmbeddedTagHint() {
+    Surface(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(14.dp),
+        color = Color.White.copy(alpha = 0.08f),
+    ) {
+        Text(
+            stringResource(R.string.nfc_embedded_tag_hint),
+            modifier = Modifier.padding(horizontal = 14.dp, vertical = 10.dp),
+            color = Color.White.copy(alpha = 0.78f),
+            fontSize = 12.sp,
+            lineHeight = 17.sp,
+            textAlign = TextAlign.Center,
+        )
     }
 }
 

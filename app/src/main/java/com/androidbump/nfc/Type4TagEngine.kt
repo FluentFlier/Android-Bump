@@ -2,7 +2,7 @@ package com.androidbump.nfc
 
 /**
  * NFC Forum Type 4 tag state machine for NDEF read-only HCE.
- * Handles common iPhone and Android reader APDU variants.
+ * Handles iPhone and Android reader APDU variants.
  */
 class Type4TagEngine(shareUrl: String) {
 
@@ -31,13 +31,15 @@ class Type4TagEngine(shareUrl: String) {
     fun processCommandApdu(commandApdu: ByteArray): ByteArray {
         if (commandApdu.size < 4) return SW_WRONG_LENGTH
 
-        val response = when (commandApdu[1].toInt() and 0xFF) {
+        val ins = commandApdu[1].toInt() and 0xFF
+        val response = when (ins) {
             0xA4 -> handleSelect(commandApdu)
             0xB0 -> handleReadBinary(commandApdu)
+            0xA3 -> SW_OK // iOS sometimes probes GET DATA
             else -> SW_UNSUPPORTED
         }
 
-        if (!readCompleted && selectedFile == SelectedFile.NDEF && commandApdu[1] == 0xB0.toByte()) {
+        if (!readCompleted && selectedFile == SelectedFile.NDEF && ins == 0xB0) {
             readCompleted = true
             NfcSessionEvents.notifySessionComplete()
         }
@@ -47,10 +49,15 @@ class Type4TagEngine(shareUrl: String) {
 
     private fun handleSelect(apdu: ByteArray): ByteArray {
         val data = extractCommandData(apdu) ?: return SW_WRONG_PARAMS
+        val p2 = apdu[3].toInt() and 0xFF
+
         selectedFile = when {
-            data.contentEquals(NDEF_AID) -> SelectedFile.APP
-            data.contentEquals(CC_FILE_ID) -> SelectedFile.CC
-            data.contentEquals(NDEF_FILE_ID) -> SelectedFile.NDEF
+            data.contentEquals(NDEF_AID) -> {
+                readCompleted = false
+                SelectedFile.APP
+            }
+            data.contentEquals(CC_FILE_ID) && isFileSelectP2(p2) -> SelectedFile.CC
+            data.contentEquals(NDEF_FILE_ID) && isFileSelectP2(p2) -> SelectedFile.NDEF
             else -> SelectedFile.NONE
         }
         return when {
@@ -58,6 +65,8 @@ class Type4TagEngine(shareUrl: String) {
             else -> SW_NOT_FOUND
         }
     }
+
+    private fun isFileSelectP2(p2: Int): Boolean = p2 == 0x0C || p2 == 0x00
 
     private fun handleReadBinary(apdu: ByteArray): ByteArray {
         val offset = ((apdu[2].toInt() and 0xFF) shl 8) or (apdu[3].toInt() and 0xFF)
@@ -73,7 +82,7 @@ class Type4TagEngine(shareUrl: String) {
         if (offset == source.size) return SW_OK
 
         val length = when {
-            le == 0 -> source.size - offset
+            le == 0 -> minOf(256, source.size - offset)
             else -> le.coerceAtMost(source.size - offset)
         }
         if (length == 0) return SW_OK
@@ -82,23 +91,25 @@ class Type4TagEngine(shareUrl: String) {
     }
 
     private fun extractLe(apdu: ByteArray): Int {
-        return when (apdu.size) {
-            4 -> 0
-            5 -> apdu[4].toInt() and 0xFF
-            else -> {
-                if (apdu.size >= 7 && (apdu[4].toInt() and 0xFF) == 0x00) {
-                    ((apdu[5].toInt() and 0xFF) shl 8) or (apdu[6].toInt() and 0xFF)
-                } else {
-                    apdu.last().toInt() and 0xFF
-                }
+        if (apdu.size == 4) return 0
+        if (apdu.size == 5) return apdu[4].toInt() and 0xFF
+        val lc = apdu[4].toInt() and 0xFF
+        return when {
+            apdu.size == 5 + lc -> apdu.last().toInt() and 0xFF
+            apdu.size == 6 + lc && apdu[5 + lc] == 0x00.toByte() -> {
+                ((apdu[5 + lc + 1].toInt() and 0xFF) shl 8) or (apdu[5 + lc + 2].toInt() and 0xFF)
             }
+            apdu.size >= 7 && lc == 0 && (apdu[4].toInt() and 0xFF) == 0x00 -> {
+                ((apdu[5].toInt() and 0xFF) shl 8) or (apdu[6].toInt() and 0xFF)
+            }
+            else -> apdu.last().toInt() and 0xFF
         }
     }
 
     private fun extractCommandData(apdu: ByteArray): ByteArray? {
         if (apdu.size < 5) return null
         val lc = apdu[4].toInt() and 0xFF
-        if (apdu.size < 5 + lc) return null
+        if (lc == 0 || apdu.size < 5 + lc) return null
         return apdu.copyOfRange(5, 5 + lc)
     }
 }

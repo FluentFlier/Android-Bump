@@ -11,6 +11,7 @@ import com.androidbump.data.ContactImporter
 import com.androidbump.data.ContactProfile
 import com.androidbump.data.ProfileRepository
 import com.androidbump.data.ShareUrlBuilder
+import com.androidbump.nfc.NfcRouting
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -28,6 +29,7 @@ data class BumpUiState(
     val nfcStatus: NfcStatus = NfcStatus.Unknown,
     val bumpPulse: Boolean = false,
     val bumpJustSent: Boolean = false,
+    val nfcIsDefault: Boolean = true,
 )
 
 enum class Screen { Setup, Bump }
@@ -53,6 +55,7 @@ class BumpViewModel(
                     shareUrl = shareUrl,
                     screen = if (shareUrl != null) Screen.Bump else Screen.Setup,
                     nfcStatus = detectNfcStatus(),
+                    nfcIsDefault = NfcRouting.isDefaultForNdef(context),
                 )
             }
         }
@@ -80,6 +83,7 @@ class BumpViewModel(
                 val profile = ShareUrlBuilder.parseProfile(url)
                 val shareUrl = ShareUrlBuilder.build(profile)
                 ProfileRepository.savePublishedProfile(getApplication(), profile, shareUrl)
+                val context = getApplication<Application>()
                 _state.update {
                     it.copy(
                         fullName = profile.fullName,
@@ -88,6 +92,7 @@ class BumpViewModel(
                         shareUrl = shareUrl,
                         screen = Screen.Bump,
                         nfcStatus = detectNfcStatus(),
+                        nfcIsDefault = NfcRouting.isDefaultForNdef(context),
                     )
                 }
             } catch (e: Exception) {
@@ -106,7 +111,13 @@ class BumpViewModel(
     }
 
     fun refreshNfcStatus() {
-        _state.update { it.copy(nfcStatus = detectNfcStatus()) }
+        val context = getApplication<Application>()
+        _state.update {
+            it.copy(
+                nfcStatus = detectNfcStatus(),
+                nfcIsDefault = NfcRouting.isDefaultForNdef(context),
+            )
+        }
     }
 
     fun onBumpDetected() {
@@ -135,12 +146,14 @@ class BumpViewModel(
                 )
                 val shareUrl = ShareUrlBuilder.build(profile)
                 ProfileRepository.savePublishedProfile(getApplication(), profile, shareUrl)
+                val context = getApplication<Application>()
                 _state.update {
                     it.copy(
                         isSaving = false,
                         shareUrl = shareUrl,
                         screen = Screen.Bump,
                         nfcStatus = detectNfcStatus(),
+                        nfcIsDefault = NfcRouting.isDefaultForNdef(context),
                     )
                 }
             } catch (e: Exception) {

@@ -1,3 +1,5 @@
+package com.androidbump.nfc
+
 /**
  * Builds NDEF URI records and Type 4 tag file layout for HCE.
  * iPhones background-read HTTPS URLs only — never raw vCard NDEF.
@@ -10,15 +12,31 @@ object NdefUriEncoder {
 
     fun encodeUriRecord(url: String): ByteArray {
         require(url.startsWith("https://")) { "Share URL must use HTTPS for iPhone background NFC" }
-        val payload = url.removePrefix("https://").encodeToByteArray()
-        val record = ByteArray(4 + payload.size)
-        record[0] = 0xD1.toByte() // MB=1 ME=1 SR=1 TNF=Well-known
-        record[1] = 0x01 // type length
-        record[2] = (1 + payload.size).toByte() // payload length (prefix + rest)
-        record[3] = 0x55 // "U"
-        record[4] = URI_PREFIX_HTTPS
-        payload.copyInto(record, destinationOffset = 5)
-        return record
+        val uriBody = url.removePrefix("https://").encodeToByteArray()
+        val payloadSize = 1 + uriBody.size
+
+        return if (payloadSize <= 255) {
+            ByteArray(5 + uriBody.size).apply {
+                this[0] = 0xD1.toByte() // MB ME SR TNF=well-known
+                this[1] = 0x01
+                this[2] = payloadSize.toByte()
+                this[3] = 0x55
+                this[4] = URI_PREFIX_HTTPS
+                uriBody.copyInto(this, destinationOffset = 5)
+            }
+        } else {
+            ByteArray(8 + uriBody.size).apply {
+                this[0] = 0xC1.toByte() // MB ME, no SR — long payload
+                this[1] = 0x01
+                this[2] = ((payloadSize shr 24) and 0xFF).toByte()
+                this[3] = ((payloadSize shr 16) and 0xFF).toByte()
+                this[4] = ((payloadSize shr 8) and 0xFF).toByte()
+                this[5] = (payloadSize and 0xFF).toByte()
+                this[6] = 0x55
+                this[7] = URI_PREFIX_HTTPS
+                uriBody.copyInto(this, destinationOffset = 8)
+            }
+        }
     }
 
     fun ndefFileSizeForUrl(url: String): Int {
@@ -38,21 +56,19 @@ object NdefUriEncoder {
         }
     }
 
-    fun buildCapabilityContainer(
-        maxRead: Int = 0x003B,
-        maxWrite: Int = 0x0034,
-        ndefMaxSize: Int = MIN_NDEF_FILE_SIZE,
-    ): ByteArray {
+    fun buildCapabilityContainer(ndefMaxSize: Int = MIN_NDEF_FILE_SIZE): ByteArray {
+        val maxRead = (ndefMaxSize + 2).coerceAtLeast(0x003B)
+        val maxWrite = 0x0034
         return byteArrayOf(
-            0x00, 0x0F, // CCLEN
-            0x20, // Mapping version 2.0
+            0x00, 0x0F,
+            0x20,
             ((maxRead shr 8) and 0xFF).toByte(), (maxRead and 0xFF).toByte(),
             ((maxWrite shr 8) and 0xFF).toByte(), (maxWrite and 0xFF).toByte(),
-            0x04, 0x06, // NDEF File Control TLV
-            0xE1.toByte(), 0x04, // File ID
+            0x04, 0x06,
+            0xE1.toByte(), 0x04,
             ((ndefMaxSize shr 8) and 0xFF).toByte(), (ndefMaxSize and 0xFF).toByte(),
-            0x00, // Read access
-            0xFF.toByte(), // Write disabled
+            0x00,
+            0xFF.toByte(),
         )
     }
 }

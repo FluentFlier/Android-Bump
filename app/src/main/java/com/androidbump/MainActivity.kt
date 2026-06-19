@@ -5,7 +5,6 @@ import android.content.Intent
 import android.net.Uri
 import android.nfc.NfcAdapter
 import android.nfc.cardemulation.CardEmulation
-import android.os.Build
 import android.os.Bundle
 import android.os.VibrationEffect
 import android.os.Vibrator
@@ -96,6 +95,7 @@ class MainActivity : ComponentActivity() {
                         onSave = vm::saveAndStartBumping,
                         onEdit = vm::enterSetup,
                         onOpenNfcSettings = ::openNfcSettings,
+                        onSetDefaultNfc = ::requestDefaultNfcService,
                     )
                 }
             }
@@ -140,15 +140,28 @@ class MainActivity : ComponentActivity() {
         startActivity(Intent(Settings.ACTION_NFC_SETTINGS))
     }
 
+    private fun requestDefaultNfcService() {
+        cardEmulation?.let { emulation ->
+            if (emulation.isDefaultServiceForCategory(apduComponent, CardEmulation.CATEGORY_OTHER)) {
+                return
+            }
+        }
+        val intent = Intent(CardEmulation.ACTION_CHANGE_DEFAULT).apply {
+            putExtra(CardEmulation.EXTRA_CATEGORY, CardEmulation.CATEGORY_OTHER)
+            putExtra(CardEmulation.EXTRA_SERVICE, apduComponent)
+        }
+        startActivity(intent)
+    }
+
     private fun vibrateBumpSuccess() {
-        val vibrator = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+        val vibrator = if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.S) {
             val manager = getSystemService(VIBRATOR_MANAGER_SERVICE) as VibratorManager
             manager.defaultVibrator
         } else {
             @Suppress("DEPRECATION")
             getSystemService(VIBRATOR_SERVICE) as Vibrator
         }
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
             vibrator.vibrate(
                 VibrationEffect.createWaveform(
                     longArrayOf(0, 40, 60, 80),

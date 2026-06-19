@@ -38,6 +38,7 @@ Use this checklist before relying on it at an event or demo.
 
 | Symptom | Try |
 |---------|-----|
+| **Embedded tag vs Android Bump popup** | Tap red banner in app → set Android Bump as default. Always pick **Android Bump**, never Embedded tag. |
 | No iPhone banner | Top-to-top only; move slowly; retry 2–3 times |
 | Banner but broken link | Confirm GitHub Pages is up (open site in Safari) |
 | No vibration on Android | Keep app in foreground; NFC chip must say ready |

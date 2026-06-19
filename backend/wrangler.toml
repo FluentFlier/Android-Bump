@@ -1,0 +1,10 @@
+name = "android-bump"
+main = "src/index.ts"
+compatibility_date = "2025-01-01"
+
+# PUBLIC_BASE_URL is set automatically by wrangler to your workers.dev URL on deploy.
+# After first deploy, copy that URL into app/build.gradle.kts DEFAULT_BASE_URL.
+
+[[kv_namespaces]]
+binding = "PROFILES"
+id = "REPLACE_WITH_KV_NAMESPACE_ID"

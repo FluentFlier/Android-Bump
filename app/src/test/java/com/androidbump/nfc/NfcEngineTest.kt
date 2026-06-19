@@ -1,0 +1,78 @@
+package com.androidbump.nfc
+
+import org.junit.Assert.assertArrayEquals
+import org.junit.Assert.assertEquals
+import org.junit.Assert.assertTrue
+import org.junit.Test
+
+class NdefUriEncoderTest {
+
+    @Test
+    fun encodeUriRecord_usesHttpsPrefixByte() {
+        val record = NdefUriEncoder.encodeUriRecord("https://bump.example/c/abc")
+        assertEquals(0xD1.toByte(), record[0])
+        assertEquals(0x55.toByte(), record[3])
+        assertEquals(0x04.toByte(), record[4])
+        assertTrue(String(record.copyOfRange(5, record.size)).startsWith("bump.example/c/abc"))
+    }
+
+    @Test
+    fun buildNdefFile_prefixesLength() {
+        val file = NdefUriEncoder.buildNdefFile("https://bump.example/c/abc")
+        val ndefLength = ((file[0].toInt() and 0xFF) shl 8) or (file[1].toInt() and 0xFF)
+        assertEquals(file.size - 2, ndefLength)
+    }
+}
+
+class Type4TagEngineTest {
+
+    private val engine = Type4TagEngine("https://bump.example/c/x")
+
+    @Test
+    fun selectNdefApp_thenReadCcAndNdef() {
+        assertEquals(2, selectNdefApp().size) // SW only
+        selectFile(0xE1, 0x03)
+        val cc = readBinary(0, 15)
+        assertTrue(cc.size >= 2)
+        assertEquals(0x90.toByte(), cc[cc.size - 2])
+
+        selectFile(0xE1, 0x04)
+        val ndef = readBinary(0, 255)
+        assertTrue(ndef.size > 2)
+        assertEquals(0x90.toByte(), ndef[ndef.size - 2])
+    }
+
+    @Test
+    fun readBinary_returnsRequestedChunk() {
+        selectFile(0xE1, 0x04)
+        val first = readBinary(0, 2)
+        assertEquals(4, first.size)
+        assertArrayEquals(byteArrayOf(first[0], first[1]), first.copyOfRange(0, 2))
+    }
+
+    private fun selectNdefApp(): ByteArray {
+        val apdu = byteArrayOf(
+            0x00, 0xA4.toByte(), 0x04, 0x00, 0x07,
+            0xD2.toByte(), 0x76, 0x00, 0x00, 0x85.toByte(), 0x01, 0x01,
+        )
+        return engine.processCommandApdu(apdu)
+    }
+
+    private fun selectFile(idHi: Int, idLo: Int): ByteArray {
+        val apdu = byteArrayOf(
+            0x00, 0xA4.toByte(), 0x00, 0x0C, 0x02,
+            idHi.toByte(), idLo.toByte(),
+        )
+        return engine.processCommandApdu(apdu)
+    }
+
+    private fun readBinary(offset: Int, le: Int): ByteArray {
+        val apdu = byteArrayOf(
+            0x00, 0xB0.toByte(),
+            ((offset shr 8) and 0xFF).toByte(),
+            (offset and 0xFF).toByte(),
+            le.toByte(),
+        )
+        return engine.processCommandApdu(apdu)
+    }
+}

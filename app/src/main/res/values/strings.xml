@@ -1,0 +1,19 @@
+<resources>
+    <string name="app_name">Android Bump</string>
+    <string name="apdu_service_description">Share contact via NFC bump</string>
+    <string name="setup_title">Android Bump</string>
+    <string name="setup_subtitle">Pick your contact once. Then bump any iPhone — they install nothing.</string>
+    <string name="import_contact">Use my contact</string>
+    <string name="enter_manually">Enter name and phone instead</string>
+    <string name="setting_up">Setting up…</string>
+    <string name="field_name">Full name</string>
+    <string name="field_phone">Phone number</string>
+    <string name="continue_to_bump">Go</string>
+    <string name="bump_ready">Ready to bump</string>
+    <string name="bump_instruction">Hold the top of your phone\nnear the top of their iPhone</string>
+    <string name="bump_detected">Sent — they should tap the banner on their iPhone</string>
+    <string name="edit_card">Edit card</string>
+    <string name="nfc_ready">NFC on — keep this screen open</string>
+    <string name="nfc_missing">This phone cannot share via NFC bump.</string>
+    <string name="nfc_disabled">Turn on NFC in Settings.</string>
+</resources>

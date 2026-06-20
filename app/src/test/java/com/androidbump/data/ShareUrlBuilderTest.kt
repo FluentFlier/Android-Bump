@@ -25,4 +25,10 @@ class ShareUrlBuilderTest {
         assertEquals(profile.phone, parsed.phone)
         assertEquals(profile.email, parsed.email)
     }
+
+    @Test
+    fun encodeDecode_roundTripsVcard() {
+        val vcard = VCardBuilder.build(ContactProfile("Jane Doe", "+14155551212"))
+        assertEquals(vcard, ShareUrlBuilder.decodeVcard(ShareUrlBuilder.encodeVcard(vcard)))
+    }
 }

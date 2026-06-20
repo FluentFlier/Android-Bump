@@ -13,13 +13,18 @@ val BumpBackground = Color(0xFF0A1F0C)
 private val BumpColorScheme = darkColorScheme(
     primary = BumpGreenLight,
     onPrimary = BumpGreenDark,
+    primaryContainer = Color(0xFF2E7D32),
+    onPrimaryContainer = Color.White,
     secondary = BumpGreen,
     background = BumpBackground,
     surface = Color(0xFF142818),
+    surfaceVariant = Color(0xFF1E3322),
     onBackground = Color.White,
     onSurface = Color.White,
     onSurfaceVariant = Color(0xFFB8D4BB),
     error = Color(0xFFFF8A80),
+    errorContainer = Color(0xFF5C1A1A),
+    onErrorContainer = Color(0xFFFFCDD2),
 )
 
 @Composable

@@ -45,7 +45,7 @@ class MainActivity : ComponentActivity() {
     }
 
     private var viewModel: BumpViewModel? = null
-    private var pendingSetupUrl: String? = null
+    private var pendingSetupUri: Uri? = null
 
     private val nfcListener: () -> Unit = {
         runOnUiThread {
@@ -68,10 +68,10 @@ class MainActivity : ComponentActivity() {
                     viewModel = vm
                     val state by vm.state.collectAsState()
 
-                    LaunchedEffect(pendingSetupUrl) {
-                        pendingSetupUrl?.let { url ->
-                            vm.importFromShareUrl(url)
-                            pendingSetupUrl = null
+                    LaunchedEffect(pendingSetupUri) {
+                        pendingSetupUri?.let { uri ->
+                            vm.importFromSetupUri(uri)
+                            pendingSetupUri = null
                         }
                     }
 
@@ -96,29 +96,31 @@ class MainActivity : ComponentActivity() {
                         onEdit = vm::enterSetup,
                         onOpenNfcSettings = ::openNfcSettings,
                         onSetDefaultNfc = ::requestDefaultNfcService,
+                        onClearError = vm::clearError,
                     )
                 }
             }
         }
 
-        handleSetupLink(intent)
+        handleSetupIntent(intent)
     }
 
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
         setIntent(intent)
-        handleSetupLink(intent)
+        handleSetupIntent(intent)
     }
 
-    private fun handleSetupLink(intent: Intent?) {
+    private fun handleSetupIntent(intent: Intent?) {
         val uri = intent?.data ?: return
-        val url = uri.toString()
-        if (!url.contains("#")) return
+        val hasPayload = uri.getQueryParameter("d") != null || !uri.fragment.isNullOrBlank()
+        if (!hasPayload && uri.scheme != "androidbump") return
+
         val vm = viewModel
         if (vm != null) {
-            vm.importFromShareUrl(url)
+            vm.importFromSetupUri(uri)
         } else {
-            pendingSetupUrl = url
+            pendingSetupUri = uri
         }
     }
 
@@ -146,11 +148,12 @@ class MainActivity : ComponentActivity() {
                 return
             }
         }
-        val intent = Intent(CardEmulation.ACTION_CHANGE_DEFAULT).apply {
-            putExtra(CardEmulation.EXTRA_CATEGORY, CardEmulation.CATEGORY_OTHER)
-            putExtra(CardEmulation.EXTRA_SERVICE, apduComponent)
-        }
-        startActivity(intent)
+        startActivity(
+            Intent(CardEmulation.ACTION_CHANGE_DEFAULT).apply {
+                putExtra(CardEmulation.EXTRA_CATEGORY, CardEmulation.CATEGORY_OTHER)
+                putExtra(CardEmulation.EXTRA_SERVICE, apduComponent)
+            },
+        )
     }
 
     private fun vibrateBumpSuccess() {

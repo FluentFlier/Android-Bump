@@ -12,252 +12,183 @@
       --green-light: #4caf50;
       --bg: #0a1f0c;
     }
-    * { box-sizing: border-box; margin: 0; padding: 0; }
+    *, *::before, *::after { box-sizing: border-box; }
     body {
+      margin: 0;
       min-height: 100dvh;
       font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", system-ui, sans-serif;
       background: radial-gradient(circle at 50% 15%, #1b5e20 0%, var(--bg) 60%);
       color: #fff;
-      padding: 24px 20px 40px;
     }
-    .wrap {
+    main {
       max-width: 420px;
       margin: 0 auto;
+      padding: 24px 20px 40px;
     }
+    .hidden { display: none !important; }
+    header { text-align: center; margin-bottom: 28px; }
     .logo {
-      width: 72px;
-      height: 72px;
-      border-radius: 50%;
+      width: 72px; height: 72px; border-radius: 50%;
       background: linear-gradient(145deg, var(--green-light), var(--green));
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 1.75rem;
-      font-weight: 700;
+      display: grid; place-items: center;
+      font-size: 1.75rem; font-weight: 700;
       margin: 0 auto 16px;
       box-shadow: 0 12px 40px rgba(0,0,0,0.35);
     }
-    h1 {
-      text-align: center;
-      font-size: 1.85rem;
-      font-weight: 650;
-      letter-spacing: -0.03em;
-      margin-bottom: 8px;
-    }
-    .lead {
-      text-align: center;
-      opacity: 0.88;
-      line-height: 1.45;
-      margin-bottom: 28px;
-    }
-    .card {
+    h1 { font-size: 1.85rem; font-weight: 650; letter-spacing: -0.03em; margin: 0 0 8px; }
+    .lead { opacity: 0.88; line-height: 1.45; margin: 0; }
+    section {
       background: rgba(255,255,255,0.08);
       border: 1px solid rgba(255,255,255,0.12);
       border-radius: 18px;
       padding: 20px;
       margin-bottom: 16px;
     }
-    .card h2 {
-      font-size: 1rem;
-      font-weight: 600;
-      margin-bottom: 14px;
-      opacity: 0.95;
-    }
-    label {
-      display: block;
-      font-size: 0.85rem;
-      opacity: 0.75;
-      margin-bottom: 6px;
-    }
-    input {
-      width: 100%;
-      border: none;
-      border-radius: 12px;
-      padding: 14px 16px;
-      font-size: 1rem;
-      margin-bottom: 14px;
-      background: rgba(0,0,0,0.25);
-      color: #fff;
+    section h2 { font-size: 1rem; font-weight: 600; margin: 0 0 14px; }
+    label { display: block; font-size: 0.85rem; opacity: 0.75; margin-bottom: 6px; }
+    input[type="text"], input[type="tel"] {
+      width: 100%; border: none; border-radius: 12px;
+      padding: 14px 16px; font-size: 1rem; margin-bottom: 14px;
+      background: rgba(0,0,0,0.25); color: #fff;
     }
     input::placeholder { color: rgba(255,255,255,0.45); }
     button, .btn {
-      display: block;
-      width: 100%;
-      border: none;
-      border-radius: 14px;
-      padding: 15px 18px;
-      font-size: 1.02rem;
-      font-weight: 600;
-      text-align: center;
-      text-decoration: none;
-      cursor: pointer;
+      display: block; width: 100%; border: none; border-radius: 14px;
+      padding: 15px 18px; font-size: 1.02rem; font-weight: 600;
+      text-align: center; text-decoration: none; cursor: pointer;
+      font-family: inherit;
     }
-    .btn-primary {
-      color: var(--green);
-      background: #fff;
-      box-shadow: 0 8px 24px rgba(0,0,0,0.25);
+    .btn-primary { color: var(--green); background: #fff; box-shadow: 0 8px 24px rgba(0,0,0,0.25); }
+    .btn-secondary { color: #fff; background: rgba(255,255,255,0.14); margin-top: 10px; }
+    ol.steps { list-style: none; counter-reset: step; margin: 0; padding: 0; }
+    ol.steps li {
+      counter-increment: step; position: relative;
+      padding-left: 34px; margin-bottom: 14px; line-height: 1.4; opacity: 0.9;
     }
-    .btn-secondary {
-      color: #fff;
-      background: rgba(255,255,255,0.14);
-      margin-top: 10px;
-    }
-    .steps {
-      list-style: none;
-      counter-reset: step;
-    }
-    .steps li {
-      counter-increment: step;
-      position: relative;
-      padding-left: 34px;
-      margin-bottom: 14px;
-      line-height: 1.4;
-      opacity: 0.9;
-    }
-    .steps li::before {
-      content: counter(step);
-      position: absolute;
-      left: 0;
-      top: 0;
-      width: 24px;
-      height: 24px;
-      border-radius: 50%;
+    ol.steps li::before {
+      content: counter(step); position: absolute; left: 0; top: 0;
+      width: 24px; height: 24px; border-radius: 50%;
       background: rgba(255,255,255,0.18);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 0.8rem;
-      font-weight: 700;
+      display: grid; place-items: center;
+      font-size: 0.8rem; font-weight: 700;
     }
-    .hidden { display: none !important; }
+    .hint { font-size: 0.82rem; opacity: 0.65; line-height: 1.4; margin: 12px 0 0; text-align: center; }
+    [role="alert"] { color: #ffcdd2; text-align: center; margin: 10px 0 0; font-size: 0.9rem; }
+    .contact-card { text-align: center; }
+    .avatar {
+      width: 88px; height: 88px; margin: 0 auto 16px; border-radius: 50%;
+      background: linear-gradient(145deg, var(--green-light), var(--green));
+      display: grid; place-items: center; font-size: 1.8rem; font-weight: 600;
+    }
+    .pill {
+      display: inline-block; padding: 6px 12px; border-radius: 999px;
+      background: rgba(255,255,255,0.12); font-size: 0.78rem; margin-bottom: 12px;
+    }
+    .phone { opacity: 0.85; font-size: 1.05rem; margin: 0 0 20px; }
     @keyframes pulse {
       0%, 100% { transform: scale(1); opacity: 0.35; }
       50% { transform: scale(1.06); opacity: 0.15; }
     }
     .pulse-ring {
-      position: absolute;
-      inset: -20px;
-      border-radius: 50%;
+      position: absolute; inset: -20px; border-radius: 50%;
       border: 2px solid rgba(255,255,255,0.25);
       animation: pulse 1.4s ease-in-out infinite;
     }
-    .hero-avatar { position: relative; }
-    .hint {
-      font-size: 0.82rem;
-      opacity: 0.65;
-      line-height: 1.4;
-      margin-top: 12px;
-      text-align: center;
-    }
-    .error { color: #ffcdd2; text-align: center; margin-top: 10px; }
-    .success-box { text-align: center; }
-    .avatar {
-      width: 88px;
-      height: 88px;
-      margin: 0 auto 16px;
-      border-radius: 50%;
-      background: linear-gradient(145deg, var(--green-light), var(--green));
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 1.8rem;
-      font-weight: 600;
-    }
-    .pill {
-      display: inline-block;
-      padding: 6px 12px;
-      border-radius: 999px;
-      background: rgba(255,255,255,0.12);
-      font-size: 0.78rem;
-      margin-bottom: 12px;
-    }
+    .hero-wrap { position: relative; }
+    .success-msg { color: var(--green-light); font-weight: 600; margin-top: 12px; }
+    noscript { display: block; text-align: center; padding: 2rem; }
   </style>
 </head>
 <body>
-  <div id="home" class="wrap hidden">
-    <div class="logo">AB</div>
-    <h1>Android Bump</h1>
-    <p class="lead">Share your contact to any iPhone with a bump. They install nothing.</p>
+  <noscript>JavaScript is required for Android Bump setup.</noscript>
 
-    <div class="card">
-      <h2>Set up online</h2>
+  <main id="home" class="hidden" aria-label="Setup">
+    <header>
+      <div class="logo" aria-hidden="true">AB</div>
+      <h1>Android Bump</h1>
+      <p class="lead">Share your contact to any iPhone with a bump. They install nothing.</p>
+    </header>
+
+    <section aria-labelledby="setup-heading">
+      <h2 id="setup-heading">Set up online</h2>
       <form id="setup-form">
         <label for="name">Your name</label>
-        <input id="name" name="name" placeholder="Jane Doe" autocomplete="name" required>
+        <input id="name" name="name" type="text" placeholder="Jane Doe" autocomplete="name" required>
         <label for="phone">Phone</label>
-        <input id="phone" name="phone" placeholder="+1 415 555 1212" autocomplete="tel" required>
+        <input id="phone" name="phone" type="tel" placeholder="+1 415 555 1212" autocomplete="tel" required>
         <button class="btn-primary" type="submit">Continue</button>
       </form>
-      <p id="setup-error" class="error hidden"></p>
-    </div>
+      <p id="setup-error" class="hidden" role="alert"></p>
+    </section>
 
-    <div class="card">
-      <h2>Or set up in the app</h2>
+    <section aria-labelledby="app-heading">
+      <h2 id="app-heading">Or set up in the app</h2>
       <ol class="steps">
-        <li>Install the Android app on your phone</li>
+        <li>Install the Android app</li>
         <li>Tap <strong>Use my contact</strong></li>
-        <li>Open bump screen and hold near iPhone</li>
+        <li>Hold near iPhone to share</li>
       </ol>
-      <a class="btn btn-primary" id="download-apk" href="https://github.com/FluentFlier/Android-Bump/releases/latest">
+      <a class="btn btn-primary" href="https://github.com/FluentFlier/Android-Bump/releases/download/latest-apk/app-debug.apk">
         Download Android app
       </a>
       <p class="hint">Requires Android with NFC. iPhone friends need zero setup.</p>
-    </div>
-  </div>
+    </section>
+  </main>
 
-  <div id="ready" class="wrap hidden">
-    <div class="logo">AB</div>
-    <h1>You're ready to bump</h1>
-    <p class="lead">Install the app, open your setup link, then bump any iPhone.</p>
-    <div class="card success-box hero-avatar">
-      <div class="pulse-ring"></div>
-      <div class="pill">Setup link ready</div>
-      <div class="avatar" id="ready-initials">?</div>
-      <h2 id="ready-name" style="font-size:1.3rem;margin-bottom:8px;">Contact</h2>
-      <p id="ready-phone" style="opacity:0.8;margin-bottom:18px;"></p>
+  <main id="ready" class="hidden" aria-label="Ready to bump">
+    <header>
+      <div class="logo" aria-hidden="true">AB</div>
+      <h1>You're ready to bump</h1>
+      <p class="lead">Open the app to load your contact, then bump any iPhone.</p>
+    </header>
+
+    <section class="contact-card hero-wrap">
+      <div class="pulse-ring" aria-hidden="true"></div>
+      <span class="pill">Setup link ready</span>
+      <div class="avatar" id="ready-initials" aria-hidden="true">?</div>
+      <h2 id="ready-name" style="font-size:1.3rem;margin:0 0 8px;">Contact</h2>
+      <p class="phone" id="ready-phone"></p>
       <a class="btn btn-primary" id="open-app" href="#">Open in Android Bump</a>
-      <a class="btn btn-secondary" id="download-apk-2" href="https://github.com/FluentFlier/Android-Bump/releases/latest">
+      <a class="btn btn-secondary" href="https://github.com/FluentFlier/Android-Bump/releases/download/latest-apk/app-debug.apk">
         Download app first
       </a>
-    </div>
-    <div class="card">
-      <h2>How to bump an iPhone</h2>
-      <ol class="steps">
-        <li>Install app → tap <strong>Open in Android Bump</strong> above</li>
-        <li>Keep the green bump screen open</li>
-        <li>Hold phone tops together with iPhone</li>
-        <li>They tap the NFC banner → contact saved</li>
-      </ol>
-    </div>
-  </div>
+    </section>
 
-  <div id="save" class="wrap hidden">
-    <div class="card success-box hero-avatar">
-      <div class="pulse-ring"></div>
-      <div class="avatar" id="initials">?</div>
-      <h1 id="save-name" style="font-size:1.6rem;margin-bottom:8px;">Contact</h1>
-      <p id="subtitle" style="opacity:0.85;margin-bottom:24px;">Tap below to save to your contacts.</p>
+    <section aria-labelledby="how-heading">
+      <h2 id="how-heading">How to bump an iPhone</h2>
+      <ol class="steps">
+        <li>Install app → tap <strong>Open in Android Bump</strong></li>
+        <li>Keep the green bump screen open</li>
+        <li>Hold phone tops together</li>
+        <li>They tap the NFC banner → save contact</li>
+      </ol>
+    </section>
+  </main>
+
+  <main id="save" class="hidden" aria-label="Save contact">
+    <section class="contact-card hero-wrap">
+      <div class="pulse-ring" aria-hidden="true"></div>
+      <div class="avatar" id="initials" aria-hidden="true">?</div>
+      <h1 id="save-name" style="font-size:1.6rem;margin:0 0 4px;">Contact</h1>
+      <p class="phone" id="save-phone"></p>
+      <p id="subtitle" style="opacity:0.85;margin:0 0 24px;">Tap below to save to your contacts.</p>
       <button class="btn-primary" id="save-btn" type="button">Add to Contacts</button>
+      <p id="save-success" class="success-msg hidden" role="status">Contact ready — check your Downloads or Contacts app.</p>
       <p class="hint">From Android Bump</p>
-    </div>
-  </div>
+    </section>
+  </main>
 
   <script>
     const BASE = location.origin + location.pathname.replace(/\/$/, "");
+    const APK = "https://github.com/FluentFlier/Android-Bump/releases/download/latest-apk/app-debug.apk";
+    const MAX_URL = 900;
 
     function buildVcard(name, phone) {
       const parts = name.trim().split(/\s+/);
       const last = parts.length > 1 ? parts[parts.length - 1] : "";
       const first = parts.length > 1 ? parts.slice(0, -1).join(" ") : parts[0] || "";
-      return [
-        "BEGIN:VCARD",
-        "VERSION:3.0",
-        "N:" + last + ";" + first + ";;;",
-        "FN:" + name.trim(),
-        "TEL;TYPE=CELL:" + phone.trim(),
-        "END:VCARD",
-        ""
-      ].join("\r\n");
+      return ["BEGIN:VCARD","VERSION:3.0","N:" + last + ";" + first + ";;;","FN:" + name.trim(),
+        "TEL;TYPE=CELL:" + phone.trim(),"END:VCARD",""].join("\r\n");
     }
 
     function encodeVcard(vcard) {
@@ -273,8 +204,7 @@
       const b64 = raw.replace(/-/g, "+").replace(/_/g, "/");
       const pad = b64.length % 4 ? "=".repeat(4 - (b64.length % 4)) : "";
       const binary = atob(b64 + pad);
-      const bytes = Uint8Array.from(binary, c => c.charCodeAt(0));
-      return new TextDecoder().decode(bytes);
+      return new TextDecoder().decode(Uint8Array.from(binary, c => c.charCodeAt(0)));
     }
 
     function parseName(vcard) {
@@ -293,7 +223,11 @@
       return name.split(/\s+/).filter(Boolean).slice(0, 2).map(w => w[0]).join("").toUpperCase() || "?";
     }
 
-    function downloadVcard(vcard, name) {
+    function appSetupUrl(encoded) {
+      return "androidbump://setup?d=" + encodeURIComponent(encoded);
+    }
+
+    function saveContact(vcard, name) {
       const blob = new Blob([vcard], { type: "text/vcard;charset=utf-8" });
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
@@ -311,12 +245,12 @@
       });
     }
 
-    function isAndroid() {
-      return /Android/i.test(navigator.userAgent);
-    }
-
-    function isIphone() {
-      return /iPhone|iPad|iPod/i.test(navigator.userAgent);
+    function showReady(name, phone, encoded) {
+      show("ready");
+      document.getElementById("ready-name").textContent = name;
+      document.getElementById("ready-phone").textContent = phone;
+      document.getElementById("ready-initials").textContent = initials(name);
+      document.getElementById("open-app").href = appSetupUrl(encoded);
     }
 
     const hash = location.hash.slice(1);
@@ -334,47 +268,46 @@
           err.classList.remove("hidden");
           return;
         }
-        const url = BASE + "#" + encodeVcard(buildVcard(name, phone));
-        if (url.length > 950) {
+        const encoded = encodeVcard(buildVcard(name, phone));
+        const nfcUrl = BASE + "#" + encoded;
+        if (nfcUrl.length > MAX_URL) {
           err.textContent = "Contact too long for NFC. Try a shorter name or phone.";
           err.classList.remove("hidden");
           return;
         }
-        history.replaceState(null, "", url);
-        showReady(name, phone, url);
+        history.replaceState(null, "", nfcUrl);
+        showReady(name, phone, encoded);
       });
-    } else if (isAndroid() && !isIphone()) {
-      show("ready");
+    } else if (/Android/i.test(navigator.userAgent) && !/iPhone|iPad|iPod/i.test(navigator.userAgent)) {
       try {
         const vcard = decodeFragment();
-        showReady(parseName(vcard), parsePhone(vcard), location.href);
+        showReady(parseName(vcard), parsePhone(vcard), hash);
       } catch (e) {
         show("home");
+        const err = document.getElementById("setup-error");
+        err.textContent = "Invalid setup link.";
+        err.classList.remove("hidden");
       }
     } else {
       show("save");
       try {
         const vcard = decodeFragment();
         const name = parseName(vcard);
+        const phone = parsePhone(vcard);
         document.getElementById("save-name").textContent = name;
+        document.getElementById("save-phone").textContent = phone;
         document.getElementById("initials").textContent = initials(name);
-        const save = () => downloadVcard(vcard, name);
-        document.getElementById("save-btn").addEventListener("click", save);
-        if (isIphone()) setTimeout(save, 300);
+        document.getElementById("save-btn").addEventListener("click", () => {
+          saveContact(vcard, name);
+          document.getElementById("subtitle").textContent = "Saving contact…";
+          document.getElementById("save-success").classList.remove("hidden");
+        });
       } catch (e) {
         document.getElementById("save-name").textContent = "Invalid link";
         document.getElementById("subtitle").textContent = e.message || "This bump link is broken.";
         document.getElementById("save-btn").style.display = "none";
         document.getElementById("initials").textContent = "!";
       }
-    }
-
-    function showReady(name, phone, url) {
-      show("ready");
-      document.getElementById("ready-name").textContent = name;
-      document.getElementById("ready-phone").textContent = phone;
-      document.getElementById("ready-initials").textContent = initials(name);
-      document.getElementById("open-app").href = url;
     }
   </script>
 </body>

@@ -15,15 +15,15 @@
     <string name="step_iphone">They tap the NFC banner — no app needed</string>
     <string name="bump_ready">READY TO BUMP</string>
     <string name="bump_step_hold">Hold tops together — like NameDrop</string>
-    <string name="bump_step_tap">They tap the NFC banner on their iPhone</string>
-    <string name="bump_sent_title">Contact sent!</string>
-    <string name="bump_sent_body">Ask them to tap the banner on their iPhone to save you.</string>
+    <string name="bump_step_tap">They tap the NFC banner, then Add to Contacts</string>
+    <string name="bump_sent_title">iPhone read your tag</string>
+    <string name="bump_sent_body">Ask them to tap the banner, then save your contact.</string>
     <string name="edit_card">Change contact</string>
     <string name="nfc_ready">NFC ready — keep this screen open</string>
     <string name="nfc_missing">This phone cannot share via NFC.</string>
     <string name="nfc_disabled">NFC is off — tap to open Settings</string>
     <string name="nfc_not_default_title">Set Android Bump as default</string>
-    <string name="nfc_not_default_body">Your phone is asking Embedded tag vs Android Bump. Set us as default so iPhone gets your contact.</string>
-    <string name="nfc_set_default">Tap to set as default NFC app</string>
-    <string name="nfc_embedded_tag_hint">If asked, pick Android Bump — not Embedded tag.</string>
+    <string name="nfc_not_default_body">If asked, pick Android Bump — not Embedded tag.</string>
+    <string name="nfc_set_default">Set default</string>
+    <string name="nfc_embedded_tag_hint">If prompted: choose Android Bump, not Embedded tag</string>
 </resources>

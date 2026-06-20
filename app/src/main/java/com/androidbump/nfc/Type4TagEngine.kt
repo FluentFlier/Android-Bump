@@ -28,23 +28,17 @@ class Type4TagEngine(shareUrl: String) {
     private var selectedFile = SelectedFile.NONE
     private var readCompleted = false
 
+    private var ndefBytesRead = 0
+
     fun processCommandApdu(commandApdu: ByteArray): ByteArray {
         if (commandApdu.size < 4) return SW_WRONG_LENGTH
 
-        val ins = commandApdu[1].toInt() and 0xFF
-        val response = when (ins) {
+        return when (commandApdu[1].toInt() and 0xFF) {
             0xA4 -> handleSelect(commandApdu)
             0xB0 -> handleReadBinary(commandApdu)
-            0xA3 -> SW_OK // iOS sometimes probes GET DATA
+            0xA3 -> SW_OK
             else -> SW_UNSUPPORTED
         }
-
-        if (!readCompleted && selectedFile == SelectedFile.NDEF && ins == 0xB0) {
-            readCompleted = true
-            NfcSessionEvents.notifySessionComplete()
-        }
-
-        return response
     }
 
     private fun handleSelect(apdu: ByteArray): ByteArray {
@@ -54,10 +48,14 @@ class Type4TagEngine(shareUrl: String) {
         selectedFile = when {
             data.contentEquals(NDEF_AID) -> {
                 readCompleted = false
+                ndefBytesRead = 0
                 SelectedFile.APP
             }
+            data.contentEquals(NDEF_FILE_ID) && isFileSelectP2(p2) -> {
+                ndefBytesRead = 0
+                SelectedFile.NDEF
+            }
             data.contentEquals(CC_FILE_ID) && isFileSelectP2(p2) -> SelectedFile.CC
-            data.contentEquals(NDEF_FILE_ID) && isFileSelectP2(p2) -> SelectedFile.NDEF
             else -> SelectedFile.NONE
         }
         return when {
@@ -86,6 +84,14 @@ class Type4TagEngine(shareUrl: String) {
             else -> le.coerceAtMost(source.size - offset)
         }
         if (length == 0) return SW_OK
+
+        if (!readCompleted && selectedFile == SelectedFile.NDEF) {
+            ndefBytesRead = (offset + length).coerceAtLeast(ndefBytesRead)
+            if (ndefBytesRead >= ndefFile.size) {
+                readCompleted = true
+                NfcSessionEvents.notifySessionComplete()
+            }
+        }
 
         return source.copyOfRange(offset, offset + length) + SW_OK
     }

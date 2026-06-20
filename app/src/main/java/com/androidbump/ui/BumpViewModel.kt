@@ -21,6 +21,7 @@ import kotlinx.coroutines.launch
 data class BumpUiState(
     val fullName: String = "",
     val phone: String = "",
+    val email: String = "",
     val shareUrl: String? = null,
     val screen: Screen = Screen.Setup,
     val isSaving: Boolean = false,
@@ -44,63 +45,41 @@ class BumpViewModel(
     val state: StateFlow<BumpUiState> = _state.asStateFlow()
 
     init {
-        viewModelScope.launch {
-            val context = getApplication<Application>()
-            val profile = ProfileRepository.loadProfile(context)
-            val shareUrl = ProfileRepository.loadShareUrl(context)
-            _state.update {
-                it.copy(
-                    fullName = profile?.fullName.orEmpty(),
-                    phone = profile?.phone.orEmpty(),
-                    shareUrl = shareUrl,
-                    screen = if (shareUrl != null) Screen.Bump else Screen.Setup,
-                    nfcStatus = detectNfcStatus(),
-                    nfcIsDefault = NfcRouting.isDefaultForNdef(context),
-                )
-            }
-        }
+        viewModelScope.launch { loadSavedProfile() }
     }
 
     fun updateName(value: String) = _state.update { it.copy(fullName = value, error = null) }
     fun updatePhone(value: String) = _state.update { it.copy(phone = value, error = null) }
     fun showManualEntry() = _state.update { it.copy(showManualEntry = true, error = null) }
+    fun clearError() = _state.update { it.copy(error = null) }
 
     fun importContact(uri: Uri) {
         val profile = ContactImporter.fromUri(getApplication(), uri) ?: run {
             _state.update { it.copy(error = "Could not read that contact.") }
             return
         }
-        _state.update {
-            it.copy(fullName = profile.fullName, phone = profile.phone, error = null)
+        if (profile.phone.isBlank()) {
+            _state.update {
+                it.copy(
+                    fullName = profile.fullName,
+                    email = profile.email,
+                    error = "Pick a contact that has a phone number.",
+                    showManualEntry = true,
+                )
+            }
+            return
         }
-        saveAndStartBumping()
+        publishProfile(profile)
     }
 
-    fun importFromShareUrl(url: String) {
+    fun importFromSetupUri(uri: Uri) {
         viewModelScope.launch {
             _state.update { it.copy(isSaving = true, error = null) }
             try {
-                val profile = ShareUrlBuilder.parseProfile(url)
-                val shareUrl = ShareUrlBuilder.build(profile)
-                ProfileRepository.savePublishedProfile(getApplication(), profile, shareUrl)
-                val context = getApplication<Application>()
-                _state.update {
-                    it.copy(
-                        fullName = profile.fullName,
-                        phone = profile.phone,
-                        isSaving = false,
-                        shareUrl = shareUrl,
-                        screen = Screen.Bump,
-                        nfcStatus = detectNfcStatus(),
-                        nfcIsDefault = NfcRouting.isDefaultForNdef(context),
-                    )
-                }
+                publishProfile(ShareUrlBuilder.profileFromSetupUri(uri))
             } catch (e: Exception) {
                 _state.update {
-                    it.copy(
-                        isSaving = false,
-                        error = e.message ?: "Could not load setup link.",
-                    )
+                    it.copy(isSaving = false, error = e.message ?: "Could not load setup link.")
                 }
             }
         }
@@ -125,7 +104,7 @@ class BumpViewModel(
         viewModelScope.launch {
             kotlinx.coroutines.delay(500)
             _state.update { it.copy(bumpPulse = false) }
-            kotlinx.coroutines.delay(3500)
+            kotlinx.coroutines.delay(4000)
             _state.update { it.copy(bumpJustSent = false) }
         }
     }
@@ -136,19 +115,27 @@ class BumpViewModel(
             _state.update { it.copy(error = "Name and phone are required.", showManualEntry = true) }
             return
         }
+        publishProfile(
+            ContactProfile(
+                fullName = current.fullName.trim(),
+                phone = current.phone.trim(),
+                email = current.email.trim(),
+            ),
+        )
+    }
 
+    private fun publishProfile(profile: ContactProfile) {
         viewModelScope.launch {
             _state.update { it.copy(isSaving = true, error = null) }
             try {
-                val profile = ContactProfile(
-                    fullName = current.fullName.trim(),
-                    phone = current.phone.trim(),
-                )
                 val shareUrl = ShareUrlBuilder.build(profile)
                 ProfileRepository.savePublishedProfile(getApplication(), profile, shareUrl)
                 val context = getApplication<Application>()
                 _state.update {
                     it.copy(
+                        fullName = profile.fullName,
+                        phone = profile.phone,
+                        email = profile.email,
                         isSaving = false,
                         shareUrl = shareUrl,
                         screen = Screen.Bump,
@@ -165,6 +152,23 @@ class BumpViewModel(
                     )
                 }
             }
+        }
+    }
+
+    private suspend fun loadSavedProfile() {
+        val context = getApplication<Application>()
+        val profile = ProfileRepository.loadProfile(context)
+        val shareUrl = ProfileRepository.loadShareUrl(context)
+        _state.update {
+            it.copy(
+                fullName = profile?.fullName.orEmpty(),
+                phone = profile?.phone.orEmpty(),
+                email = profile?.email.orEmpty(),
+                shareUrl = shareUrl,
+                screen = if (shareUrl != null) Screen.Bump else Screen.Setup,
+                nfcStatus = detectNfcStatus(),
+                nfcIsDefault = NfcRouting.isDefaultForNdef(context),
+            )
         }
     }
 
